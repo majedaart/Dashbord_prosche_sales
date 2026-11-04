@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Porsche | Análise de vendas</title>
+<style>
+:root{--bg:#101113;--panel:#191a1d;--line:#303135;--text:#f6f5f2;--muted:#a4a5a8;--gold:#c6a96b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+.hero{min-height:280px;padding:28px 5%;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(90deg,#090a0bea,#090a0b55),url("https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1800&q=85") center/cover}
+.brand,footer{display:flex;justify-content:space-between;gap:16px;text-transform:uppercase;letter-spacing:.16em;font-size:11px}
+.hero h1{font-size:clamp(38px,6vw,68px);font-weight:500;margin:0}
+.hero p{color:#ddd}
+.gold{color:#dfc98f;font-size:11px;letter-spacing:.2em;text-transform:uppercase}
+main{max-width:1400px;margin:auto;padding:28px 4% 44px}
+.head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+h2{font-size:19px;font-weight:500;margin:0}
+small,.sub{color:var(--muted)}
+.badge{border:1px solid #766543;color:#dfc98f;border-radius:30px;padding:8px 12px;font-size:11px}
+.filters{display:grid;grid-template-columns:repeat(4,1fr) auto;gap:10px;margin:20px 0}
+label{display:block;color:var(--muted);font-size:11px;margin:0 0 6px 2px}
+select,button{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:8px;color:var(--text);padding:12px}
+button{cursor:pointer;color:#dfc98f}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.card,.chart{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.kpi-label{color:var(--muted);font-size:12px}
+.kpi-value{font-size:30px;margin:14px 0 6px}
+.kpi-note{font-size:11px;color:#dfc98f}
+.charts{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+.chart{min-height:300px}
+.chart h3{font-size:15px;font-weight:500;margin:0}
+.chart p{font-size:11px;color:var(--muted);margin:7px 0 15px}
+canvas{width:100%;height:220px}
+.insights{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.insight{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.city{color:#dfc98f;text-transform:uppercase;letter-spacing:.12em;font-size:11px}
+.model{font-size:17px;margin:12px 0 6px}
+.note{margin-top:16px;padding:13px 15px;border-left:2px solid var(--gold);background:#c6a96b12;color:#d4d0c6;font-size:12px;line-height:1.5}
+footer{border-top:1px solid var(--line);padding:18px 5%;color:var(--muted);font-size:10px}
+@media(max-width:800px){.filters{grid-template-columns:repeat(2,1fr)}.kpis{grid-template-columns:repeat(2,1fr)}.charts{grid-template-columns:1fr}.insights{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.filters,.kpis,.insights{grid-template-columns:1fr}.head{align-items:flex-start;flex-direction:column}footer{flex-direction:column}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="brand"><strong>Porsche</strong><span>Análise de vendas</span></div>
+  <div><div class="gold">Performance • Design • Exclusividade</div><h1>Porsche<br>em movimento.</h1><p>Performance, design e exclusividade em cada jornada.</p></div>
+</header>
+<main>
+  <div class="head">
+    <div><h2>Painel de vendas</h2><small>Explore modelos, anos, cidades e formas de pagamento.</small></div>
+    <span class="badge">PRÉVIA PARCIAL · 7 REGISTROS VISÍVEIS</span>
+  </div>
+
+  <section class="filters">
+    <div><label for="model">Model Porsche</label><select id="model"><option value="">Todos</option></select></div>
+    <div><label for="year">Model Year</label><select id="year"><option value="">Todos</option></select></div>
+    <div><label for="city">City</label><select id="city"><option value="">Todas</option></select></div>
+    <div><label for="pay">Pay method</label><select id="pay"><option value="">Todos</option></select></div>
+    <button id="reset">Limpar filtros</button>
+  </section>
+
+  <section class="kpis">
+    <article class="card"><div class="kpi-label">Vendas no recorte</div><div class="kpi-value" id="total">—</div><div class="kpi-note">Registros visíveis após filtros</div></article>
+    <article class="card"><div class="kpi-label">Ticket médio</div><div class="kpi-value" id="avg">—</div><div class="kpi-note">Valores de origem em USD</div></article>
+    <article class="card"><div class="kpi-label">Modelos distintos</div><div class="kpi-value" id="models">—</div><div class="kpi-note">No recorte filtrado</div></article>
+    <article class="card"><div class="kpi-label">Cidades atendidas</div><div class="kpi-value" id="cities">—</div><div class="kpi-note">No recorte filtrado</div></article>
+  </section>
+
+  <section class="charts">
+    <article class="chart">
+      <h3>Modelos por cidade</h3><p>Contagem dos registros visíveis, organizada por cidade.</p>
+      <canvas id="cityChart"></canvas>
+    </article>
+    <article class="chart">
+      <h3>Vendas por ano-modelo</h3><p>Distribuição dos registros pelo ano do veículo.</p>
+      <canvas id="yearChart"></canvas>
+    </article>
+  </section>
+
+  <section>
+    <div class="head" style="margin-top:22px"><div><h2>Modelos por cidade</h2><small>Modelo mais frequente em cada cidade no recorte atual.</small></div></div>
+    <div class="insights" id="insights"></div>
+  </section>
+
+  <div class="note"><strong>Nota:</strong> painel baseado nos 7 registros visíveis na prévia do arquivo, não no conjunto completo. Os valores de venda estão em USD, conforme os dados fornecidos. O gráfico de vendas por estado foi removido.</div>
+</main>
+<footer><span>Porsche</span><span>Legado • Inovação • Performance</span><span>Dashboard de vendas</span></footer>
+
+<script>
+const data=[
+ {model:"718 Cayman",year:2022,price:79500,city:"Boston",pay:"Credit Card"},
+ {model:"911 Turbo S",year:2024,price:235000,city:"Seattle",pay:"Wire Transfer"},
+ {model:"Cayenne Coupe",year:2023,price:112750,city:"Austin",pay:"Financing"},
+ {model:"Macan S",year:2021,price:68900,city:"Denver",pay:"Cash"},
+ {model:"Taycan 4S",year:2024,price:121000,city:"Los Angeles",pay:"Bank Transfer"},
+ {model:"Panamera 4",year:2023,price:104500,city:"Miami",pay:"Credit Card"},
+ {model:"911 Carrera S",year:2020,price:96300,city:"New York",pay:"Lease"}
+];
+const $=id=>document.getElementById(id), colors=["#c6a96b","#9eabb8","#8ba78d","#a47979","#8e83a6","#bd7e4d"];
+function options(id,key){[...new Set(data.map(x=>x[key]))].sort().forEach(v=>{let o=document.createElement("option");o.value=v;o.textContent=v;$(id).appendChild(o)})}
+options("model","model");options("year","year");options("city","city");options("pay","pay");
+function rows(){return data.filter(x=>(!$("model").value||x.model===$("model").value)&&(!$("year").value||String(x.year)===$("year").value)&&(!$("city").value||x.city===$("city").value)&&(!$("pay").value||x.pay===$("pay").value))}
+function canvas(id){let c=$(id),r=c.getBoundingClientRect(),d=devicePixelRatio||1;c.width=r.width*d;c.height=220*d;let x=c.getContext("2d");x.scale(d,d);return{x,w:r.width,h:220}}
+function barChart(list){
+ let {x,w,h}=canvas("cityChart");x.clearRect(0,0,w,h);
+ let cs=[...new Set(list.map(a=>a.city))], max=Math.max(1,...cs.map(c=>list.filter(a=>a.city===c).length));
+ if(!cs.length){x.fillStyle="#aaa";x.fillText("Sem dados para os filtros selecionados.",10,25);return}
+ let left=90,slot=(h-20)/cs.length;
+ cs.forEach((c,i)=>{let n=list.filter(a=>a.city===c).length,y=10+i*slot+slot*.25,bw=(w-left-25)*n/max;
+ x.fillStyle="#aaa";x.font="11px Arial";x.textAlign="right";x.fillText(c,left-8,y+10);
+ x.fillStyle=colors[i%colors.length];x.fillRect(left,y,bw,20);
+ x.fillStyle="#fff";x.textAlign="left";x.fillText(n,left+bw+6,y+10)});
+}
+function yearChart(list){
+ let {x,w,h}=canvas("yearChart");x.clearRect(0,0,w,h);
+ let ys=[...new Set(list.map(a=>a.year))].sort((a,b)=>a-b), counts=ys.map(y=>list.filter(a=>a.year===y).length),max=Math.max(1,...counts);
+ if(!ys.length){x.fillStyle="#aaa";x.fillText("Sem dados para os filtros selecionados.",10,25);return}
+ let left=30,right=15,top=20,bottom=30,pw=w-left-right,ph=h-top-bottom;
+ x.strokeStyle="#c6a96b";x.lineWidth=2;x.beginPath();
+ ys.forEach((year,i)=>{let px=ys.length===1?left+pw/2:left+i*pw/(ys.length-1),py=top+ph-counts[i]/max*ph;i?x.lineTo(px,py):x.moveTo(px,py)});
+ x.stroke();
+ ys.forEach((year,i)=>{let px=ys.length===1?left+pw/2:left+i*pw/(ys.length-1),py=top+ph-counts[i]/max*ph;
+ x.fillStyle="#dfc98f";x.beginPath();x.arc(px,py,4,0,7);x.fill();x.fillStyle="#ddd";x.font="11px Arial";x.textAlign="center";x.fillText(year,px,h-8);x.fillText(counts[i],px,py-10)});
+}
+function render(){
+ let a=rows();$("total").textContent=a.length;
+ $("avg").textContent=a.length?new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(a.reduce((s,x)=>s+x.price,0)/a.length):"—";
+ $("models").textContent=new Set(a.map(x=>x.model)).size;$("cities").textContent=new Set(a.map(x=>x.city)).size;
+ barChart(a);yearChart(a);
+ let groups={};a.forEach(x=>(groups[x.city]??={})[x.model]=(groups[x.city]?.[x.model]||0)+1);
+ $("insights").innerHTML=Object.entries(groups).map(([city,models])=>{let top=Object.entries(models).sort((a,b)=>b[1]-a[1])[0];return `<article class="insight"><div class="city">${city}</div><div class="model">${top[0]}</div><div class="sub">Mais frequente no recorte: ${top[1]} registro(s)</div></article>`}).join("")||"<p class='sub'>Nenhum registro para os filtros.</p>";
+}
+["model","year","city","pay"].forEach(id=>$(id).addEventListener("change",render));
+$("reset").onclick=()=>{["model","year","city","pay"].forEach(id=>$(id).value="");render()};
+window.addEventListener("resize",render);render();
+</script>
+</body>
+</html>
